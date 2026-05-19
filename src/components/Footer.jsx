@@ -13,7 +13,7 @@ import { FaXTwitter } from "react-icons/fa6";
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-white mt-20">
+    <footer className="bg-black text-white mt-15">
       {/* Top Footer */}
       <div className="max-w-7xl mx-auto px-6 md:px-10 py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
 
@@ -42,7 +42,7 @@ const Footer = () => {
         </div>
 
         {/* Quick Links */}
-        <div>
+        <div className="text-center">
           <h3 className="text-2xl font-bold mb-6">
             Quick Links
           </h3>
@@ -81,7 +81,7 @@ const Footer = () => {
         </div>
 
         {/* Explore */}
-        <div>
+        <div className="text-center">
           <h3 className="text-2xl font-bold mb-6">
             Explore
           </h3>
@@ -120,24 +120,24 @@ const Footer = () => {
         </div>
 
         {/* Contact */}
-        <div>
+        <div className="text-center">
           <h3 className="text-2xl font-bold mb-6">
             Contact
           </h3>
 
           <div className="space-y-4 text-[#f6b84c]">
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-center justify-center gap-3">
               <FaMapMarkerAlt className="mt-1" />
               <p>Dhaka, Bangladesh</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center gap-3">
               <FaEnvelope />
               <p>support@studynook.com</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex justify-center items-center gap-3">
               <FaPhoneAlt />
               <p>+880 1234-567890</p>
             </div>
