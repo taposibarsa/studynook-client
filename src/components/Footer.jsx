@@ -5,6 +5,7 @@ import {
   FaBookOpen,
   FaFacebookF,
   FaInstagram,
+  FaLinkedinIn,
   FaMapMarkerAlt,
   FaEnvelope,
   FaPhoneAlt,
@@ -57,6 +58,12 @@ const Footer = () => {
             <li>
               <Link href="/rooms" className="hover:text-white transition">
                 Rooms
+              </Link>
+            </li>
+
+            <li>
+              <Link href="/about" className="hover:text-white transition">
+                About
               </Link>
             </li>
 
@@ -169,9 +176,19 @@ const Footer = () => {
             <Link
               href="https://twitter.com"
               target="_blank"
+              rel="noopener noreferrer"
               className="hover:text-[#f6b84c] transition"
             >
               <FaXTwitter />
+            </Link>
+
+            <Link
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#f6b84c] transition"
+            >
+              <FaLinkedinIn />
             </Link>
 
             <Link
