@@ -14,3 +14,6 @@ html {
 body {
   @apply transition-colors duration-300;
 }
+.dark body {
+  @apply bg-slate-950 text-white;
+}
