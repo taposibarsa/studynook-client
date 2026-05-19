@@ -15,7 +15,9 @@ export default function RoomForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     const form = e.target;
-    const selected = AMENITIES.filter((a) => form[`amenity-${a}`]?.checked);
+    const selected = AMENITIES.filter((a) =>
+      form.querySelector(`[name="amenity-${a}"]`)?.checked
+    );
 
     onSubmit({
       name: form.name.value,
