@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import ExternalImage from "./ExternalImage";
 
 function truncate(text, max = 100) {
   if (!text) return "";
@@ -16,7 +16,7 @@ export default function RoomCard({ room }) {
   return (
     <div className="flex flex-col h-full rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
       <div className="relative h-52 w-full shrink-0">
-        <Image
+        <ExternalImage
           src={room.image}
           alt={room.name}
           fill

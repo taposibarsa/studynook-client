@@ -20,7 +20,10 @@ function MyListingsContent() {
     setLoading(true);
     apiFetch("/api/rooms/mine")
       .then(setRooms)
-      .catch(() => setRooms([]))
+      .catch((err) => {
+        setRooms([]);
+        toast.error(err.message || "Could not load your listings");
+      })
       .finally(() => setLoading(false));
   };
 

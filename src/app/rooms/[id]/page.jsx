@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import ExternalImage from "@/components/ExternalImage";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -77,7 +77,7 @@ export default function RoomDetailsPage() {
     <div className="max-w-5xl mx-auto px-4 py-12">
       <div className="grid lg:grid-cols-2 gap-10">
         <div className="relative h-80 lg:h-[28rem] rounded-2xl overflow-hidden">
-          <Image src={room.image} alt={room.name} fill className="object-cover" />
+          <ExternalImage src={room.image} alt={room.name} fill className="object-cover" />
         </div>
         <div>
           <h1 className="text-4xl font-bold text-black dark:text-white">{room.name}</h1>

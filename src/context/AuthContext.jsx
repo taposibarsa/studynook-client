@@ -2,19 +2,40 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { API_URL } from "@/lib/constants";
+import { authClient } from "@/lib/auth-client";
 import Navbar from "@/components/Navbar";
 
 const AuthContext = createContext(null);
+
+function mapBetterAuthUser(user) {
+  if (!user) return null;
+  return {
+    _id: user.id,
+    name: user.name,
+    email: user.email,
+    photoUrl: user.image || user.photoUrl || "",
+  };
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
+    setLoading(true);
     try {
-      const data = await apiFetch("/api/auth/me");
-      setUser(data.user);
+      const { data: session } = await authClient.getSession();
+      if (session?.user) {
+        setUser(mapBetterAuthUser(session.user));
+        return;
+      }
+
+      try {
+        const data = await apiFetch("/api/auth/me");
+        setUser(data.user);
+      } catch {
+        setUser(null);
+      }
     } catch {
       setUser(null);
     } finally {
@@ -27,26 +48,38 @@ export function AuthProvider({ children }) {
   }, [refreshUser]);
 
   const login = async (email, password) => {
-    const data = await apiFetch("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
-    setUser(data.user);
-    return data.user;
+    const { data, error } = await authClient.signIn.email({ email, password });
+    if (error) {
+      throw new Error(error.message || "Invalid email or password");
+    }
+    const mapped = mapBetterAuthUser(data?.user);
+    setUser(mapped);
+    return mapped;
   };
 
-  const register = async (payload) => {
-    return apiFetch("/api/auth/register", {
-      method: "POST",
-      body: JSON.stringify(payload),
+  const register = async ({ name, email, photoUrl, password }) => {
+    const { error } = await authClient.signUp.email({
+      email,
+      password,
+      name,
+      photoUrl,
+      image: photoUrl,
     });
+    if (error) {
+      throw new Error(error.message || "Registration failed");
+    }
   };
 
   const logout = async () => {
     try {
+      await authClient.signOut();
+    } catch {
+      /* ignore */
+    }
+    try {
       await apiFetch("/api/auth/logout", { method: "POST" });
     } catch {
-      /* clear client state even if request fails */
+      /* ignore */
     }
     setUser(null);
   };
@@ -55,7 +88,7 @@ export function AuthProvider({ children }) {
     ? {
         displayName: user.name,
         email: user.email,
-        photoURL: user.photoUrl,
+        photoURL: user.photoUrl || user.image,
         _id: user._id,
       }
     : null;
@@ -76,6 +109,10 @@ export function useAuth() {
   return ctx;
 }
 
-export function googleLogin() {
-  window.location.href = `${API_URL}/api/auth/google`;
+export async function googleLogin(callbackURL = "/") {
+  await authClient.signIn.social({
+    provider: "google",
+    callbackURL,
+    errorCallbackURL: "/login",
+  });
 }

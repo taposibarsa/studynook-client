@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { FcGoogle } from "react-icons/fc";
 import toast from "react-hot-toast";
 import { useAuth, googleLogin } from "@/context/AuthContext";
+import PasswordInput from "@/components/PasswordInput";
 
 function LoginForm() {
   const { login } = useAuth();
@@ -13,6 +14,18 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/";
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Strip credentials if browser/password manager submitted as GET (security)
+  useEffect(() => {
+    if (searchParams.has("email") || searchParams.has("password")) {
+      const safeNext = searchParams.get("next");
+      const path = safeNext
+        ? `/login?next=${encodeURIComponent(safeNext)}`
+        : "/login";
+      router.replace(path);
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +49,11 @@ function LoginForm() {
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Welcome Back</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Login to your account</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="space-y-5"
+        >
           <div>
             <label className="block mb-2 text-[16px] font-medium text-gray-800 dark:text-gray-300">
               Email Address
@@ -53,13 +70,7 @@ function LoginForm() {
             <label className="block mb-2 text-[16px] font-medium text-gray-800 dark:text-gray-300">
               Password
             </label>
-            <input
-              type="password"
-              name="password"
-              required
-              placeholder="Enter your password"
-              className="w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
-            />
+            <PasswordInput placeholder="Enter your password" />
           </div>
           <button
             type="submit"
@@ -76,11 +87,20 @@ function LoginForm() {
         </div>
         <button
           type="button"
-          onClick={googleLogin}
-          className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-3 font-medium text-gray-700 dark:text-white hover:bg-black hover:text-white transition"
+          disabled={googleLoading}
+          onClick={async () => {
+            setGoogleLoading(true);
+            try {
+              await googleLogin(next);
+            } catch (err) {
+              toast.error(err.message || "Google sign-in failed");
+              setGoogleLoading(false);
+            }
+          }}
+          className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-3 font-medium text-gray-700 dark:text-white hover:bg-black hover:text-white transition disabled:opacity-50"
         >
           <FcGoogle className="text-2xl" />
-          Sign in with Google
+          {googleLoading ? "Redirecting..." : "Sign in with Google"}
         </button>
         <p className="text-center text-[16px] text-gray-600 dark:text-gray-400 mt-6">
           Don&apos;t have an account?{" "}

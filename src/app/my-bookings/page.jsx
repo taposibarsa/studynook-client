@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import ExternalImage from "@/components/ExternalImage";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import PrivateRoute from "@/components/PrivateRoute";
@@ -25,7 +25,10 @@ function MyBookingsContent() {
     setLoading(true);
     apiFetch("/api/bookings/mine")
       .then(setBookings)
-      .catch(() => setBookings([]))
+      .catch((err) => {
+        setBookings([]);
+        toast.error(err.message || "Could not load your bookings");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -66,7 +69,7 @@ function MyBookingsContent() {
             >
               {b.room?.image && (
                 <div className="relative w-full sm:w-40 h-32 shrink-0 rounded-xl overflow-hidden">
-                  <Image src={b.room.image} alt={b.room.name} fill className="object-cover" />
+                  <ExternalImage src={b.room.image} alt={b.room.name} fill className="object-cover" />
                 </div>
               )}
               <div className="flex-1">

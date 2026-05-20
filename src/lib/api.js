@@ -1,7 +1,17 @@
 import { API_URL } from "./constants";
 
+function getApiBase() {
+  if (typeof window !== "undefined") {
+    return "/api/backend";
+  }
+  return API_URL;
+}
+
 export async function apiFetch(path, options = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
+  const base = getApiBase();
+  const urlPath =
+    base === "/api/backend" ? path.replace(/^\/api/, "") || "/" : path;
+  const res = await fetch(`${base}${urlPath}`, {
     ...options,
     credentials: "include",
     headers: {

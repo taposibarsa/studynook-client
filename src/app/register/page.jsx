@@ -6,12 +6,14 @@ import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import toast from "react-hot-toast";
 import { useAuth, googleLogin } from "@/context/AuthContext";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function RegisterPage() {
   const { register } = useAuth();
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -66,7 +68,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <label className="block mb-2 font-medium text-gray-800 dark:text-gray-300">Password</label>
-            <input type="password" name="password" required className="w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+            <PasswordInput placeholder="Create a password" />
           </div>
           {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
           <button type="submit" disabled={loading} className="w-full rounded-xl text-black text-xl border-black border-2 hover:bg-black hover:text-white font-semibold py-3 transition disabled:opacity-50">
@@ -78,9 +80,22 @@ export default function RegisterPage() {
           <span className="text-sm text-gray-500">OR</span>
           <div className="h-px flex-1 bg-gray-300 dark:bg-zinc-700" />
         </div>
-        <button type="button" onClick={googleLogin} className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-300 dark:border-zinc-700 py-3 font-medium hover:bg-black hover:text-white transition">
+        <button
+          type="button"
+          disabled={googleLoading}
+          onClick={async () => {
+            setGoogleLoading(true);
+            try {
+              await googleLogin("/");
+            } catch (err) {
+              toast.error(err.message || "Google sign-in failed");
+              setGoogleLoading(false);
+            }
+          }}
+          className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-300 dark:border-zinc-700 py-3 font-medium hover:bg-black hover:text-white transition disabled:opacity-50"
+        >
           <FcGoogle className="text-2xl" />
-          Continue with Google
+          {googleLoading ? "Redirecting..." : "Continue with Google"}
         </button>
         <p className="text-center text-gray-600 dark:text-gray-400 mt-6">
           Already have an account? <Link href="/login" className="text-blue-600 hover:font-bold">Login</Link>
