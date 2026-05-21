@@ -88,14 +88,9 @@ function LoginForm() {
         <button
           type="button"
           disabled={googleLoading}
-          onClick={async () => {
+          onClick={() => {
             setGoogleLoading(true);
-            try {
-              await googleLogin(next);
-            } catch (err) {
-              toast.error(err.message || "Google sign-in failed");
-              setGoogleLoading(false);
-            }
+            googleLogin();
           }}
           className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-3 font-medium text-gray-700 dark:text-white hover:bg-black hover:text-white transition disabled:opacity-50"
         >

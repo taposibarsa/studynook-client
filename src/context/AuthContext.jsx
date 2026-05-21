@@ -2,20 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { authClient } from "@/lib/auth-client";
 import Navbar from "@/components/Navbar";
 
 const AuthContext = createContext(null);
-
-function mapBetterAuthUser(user) {
-  if (!user) return null;
-  return {
-    _id: user.id,
-    name: user.name,
-    email: user.email,
-    photoUrl: user.image || user.photoUrl || "",
-  };
-}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -24,18 +13,8 @@ export function AuthProvider({ children }) {
   const refreshUser = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: session } = await authClient.getSession();
-      if (session?.user) {
-        setUser(mapBetterAuthUser(session.user));
-        return;
-      }
-
-      try {
-        const data = await apiFetch("/api/auth/me");
-        setUser(data.user);
-      } catch {
-        setUser(null);
-      }
+      const data = await apiFetch("/api/auth/me");
+      setUser(data.user);
     } catch {
       setUser(null);
     } finally {
@@ -48,34 +27,22 @@ export function AuthProvider({ children }) {
   }, [refreshUser]);
 
   const login = async (email, password) => {
-    const { data, error } = await authClient.signIn.email({ email, password });
-    if (error) {
-      throw new Error(error.message || "Invalid email or password");
-    }
-    const mapped = mapBetterAuthUser(data?.user);
-    setUser(mapped);
-    return mapped;
+    const data = await apiFetch("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    setUser(data.user);
+    return data.user;
   };
 
   const register = async ({ name, email, photoUrl, password }) => {
-    const { error } = await authClient.signUp.email({
-      email,
-      password,
-      name,
-      photoUrl,
-      image: photoUrl,
+    await apiFetch("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, photoUrl, password }),
     });
-    if (error) {
-      throw new Error(error.message || "Registration failed");
-    }
   };
 
   const logout = async () => {
-    try {
-      await authClient.signOut();
-    } catch {
-      /* ignore */
-    }
     try {
       await apiFetch("/api/auth/logout", { method: "POST" });
     } catch {
@@ -88,7 +55,7 @@ export function AuthProvider({ children }) {
     ? {
         displayName: user.name,
         email: user.email,
-        photoURL: user.photoUrl || user.image,
+        photoURL: user.photoUrl,
         _id: user._id,
       }
     : null;
@@ -109,10 +76,7 @@ export function useAuth() {
   return ctx;
 }
 
-export async function googleLogin(callbackURL = "/") {
-  await authClient.signIn.social({
-    provider: "google",
-    callbackURL,
-    errorCallbackURL: "/login",
-  });
+/** Browser redirect via client proxy so auth cookies stay on the app origin. */
+export function googleLogin() {
+  window.location.href = "/api/backend/auth/google";
 }

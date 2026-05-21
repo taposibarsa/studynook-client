@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
 async function proxy(request, context) {
   const { path } = await context.params;
   const segments = Array.isArray(path) ? path.join("/") : path;
@@ -19,6 +21,7 @@ async function proxy(request, context) {
     method: request.method,
     headers,
     cache: "no-store",
+    redirect: "manual",
   };
 
   if (request.method !== "GET" && request.method !== "HEAD") {
@@ -28,9 +31,6 @@ async function proxy(request, context) {
   const upstream = await fetch(target, init);
   const responseHeaders = new Headers();
 
-  const contentTypeRes = upstream.headers.get("content-type");
-  if (contentTypeRes) responseHeaders.set("content-type", contentTypeRes);
-
   const setCookies =
     typeof upstream.headers.getSetCookie === "function"
       ? upstream.headers.getSetCookie()
@@ -39,6 +39,16 @@ async function proxy(request, context) {
   for (const c of setCookies) {
     responseHeaders.append("set-cookie", c);
   }
+
+  if (REDIRECT_STATUSES.has(upstream.status)) {
+    const location = upstream.headers.get("location");
+    if (location) {
+      return NextResponse.redirect(location, upstream.status);
+    }
+  }
+
+  const contentTypeRes = upstream.headers.get("content-type");
+  if (contentTypeRes) responseHeaders.set("content-type", contentTypeRes);
 
   const body = await upstream.text();
   return new NextResponse(body, {

@@ -83,14 +83,9 @@ export default function RegisterPage() {
         <button
           type="button"
           disabled={googleLoading}
-          onClick={async () => {
+          onClick={() => {
             setGoogleLoading(true);
-            try {
-              await googleLogin("/");
-            } catch (err) {
-              toast.error(err.message || "Google sign-in failed");
-              setGoogleLoading(false);
-            }
+            googleLogin();
           }}
           className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-300 dark:border-zinc-700 py-3 font-medium hover:bg-black hover:text-white transition disabled:opacity-50"
         >
