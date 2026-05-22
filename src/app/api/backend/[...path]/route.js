@@ -43,7 +43,11 @@ async function proxy(request, context) {
   if (REDIRECT_STATUSES.has(upstream.status)) {
     const location = upstream.headers.get("location");
     if (location) {
-      return NextResponse.redirect(location, upstream.status);
+      // OAuth callback sends Set-Cookie on a 302; must forward or new users stay logged out.
+      return NextResponse.redirect(location, {
+        status: upstream.status,
+        headers: responseHeaders,
+      });
     }
   }
 
